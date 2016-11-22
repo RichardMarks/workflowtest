@@ -7,6 +7,9 @@ const outputPath = path.resolve(__dirname, debug ? 'build' : 'dist');
 const srcPath = path.resolve(__dirname, 'src');
 const entry = [path.join(srcPath, 'index.js')];
 
+const modPath = path.resolve(__dirname, 'node_modules');
+const libPath = path.resolve(__dirname, 'node_modules', 'testing-library', 'src');
+
 module.exports = {
   entry,
   output: {
@@ -17,35 +20,23 @@ module.exports = {
   plugins: debug ? [] : [
     new webpack.optimize.DedupePlugin(),
      new webpack.optimize.UglifyJsPlugin({
-       compressor: {screw_ie8: true, keep_fnames: true, warnings: false},
+       sourceMap: true
      }),
-    new webpack.optimize.OccurenceOrderPlugin(),
   ],
   devtool: debug ? 'source-map' : undefined,
   module: {
-    loaders: [
-    {
-      test: /(\.js)$/,
-      include: [srcPath],
-      loader: require.resolve('babel-loader'),
-      babelrc: false,
-      query: {
-        presets: [
-          'babel-preset-es2015',
-        ].map(require.resolve),
-      }
-    },
+    rules: [
+      {
+        test: /(\.js)$/,
+        include: [srcPath, libPath],
+        use: [require.resolve('babel-loader')],
+      },
     ],
   },
   resolve: {
-    root: [
-      srcPath,
-    ],
-    extensions: ['', '.js'],
-    fallback: [path.resolve('./node_modules')],
-  },
-  resolveLoader: {
-    fallback: [path.resolve('./node_modules')],
+    symlinks: true,
+    mainFiles: [srcPath, libPath],
+    modules: [srcPath, libPath, modPath],
   },
 };
 
